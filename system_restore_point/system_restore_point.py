@@ -1,7 +1,7 @@
 """
 ╔══════════════════════════════════════════════════════════════╗
 ║        Gestionnaire de Points de Restauration Windows        ║
-║                     Version 1.0 (PowerShell)                 ║
+║                     Version 1.1 (PowerShell)                 ║
 ╚══════════════════════════════════════════════════════════════╝
 
 Toutes les opérations utilisent PowerShell (WMIC est déprécié
@@ -24,6 +24,8 @@ import json
 import csv
 import logging
 import re
+import socket
+import platform
 from datetime import datetime
 from pathlib import Path
 
@@ -121,6 +123,97 @@ def _ps(script: str, timeout: int = 30) -> tuple:
         raise RuntimeError("powershell.exe introuvable — Windows requis.")
     except Exception as exc:
         raise RuntimeError(f"Erreur subprocess : {exc}") from exc
+
+
+# ─────────────────────────────────────────────
+#  Génération automatique de description
+# ─────────────────────────────────────────────
+
+# Contextes détectés automatiquement selon l'heure et le jour
+_CONTEXTES_HEURE = [
+    (6,  9,  "Demarrage matinal"),
+    (9,  12, "Matinee de travail"),
+    (12, 14, "Pause dejeuner"),
+    (14, 18, "Session apres-midi"),
+    (18, 21, "Soiree"),
+    (21, 24, "Travail nocturne"),
+    (0,  6,  "Session de nuit"),
+]
+
+_JOURS_FR = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]
+
+
+def _contexte_heure(heure: int) -> str:
+    for debut, fin, label in _CONTEXTES_HEURE:
+        if debut <= heure < fin:
+            return label
+    return "Session"
+
+
+def _infos_systeme() -> dict:
+    """Collecte les infos système disponibles sans appel réseau."""
+    infos = {}
+
+    # Nom de la machine
+    try:
+        infos["machine"] = socket.gethostname()
+    except Exception:
+        infos["machine"] = "PC"
+
+    # Utilisateur courant
+    infos["utilisateur"] = os.getenv("USERNAME") or os.getenv("USER") or "Utilisateur"
+
+    # Version Windows via platform
+    try:
+        infos["os"] = platform.version()          # ex : "10.0.22631"
+        infos["os_nom"] = platform.win32_ver()[0] # ex : "10"
+    except Exception:
+        infos["os"] = ""
+        infos["os_nom"] = "Windows"
+
+    # Espace disque libre sur C:
+    try:
+        usage = os.statvfs("C:\\") if hasattr(os, "statvfs") else None
+        if usage:
+            libre_go = (usage.f_bavail * usage.f_frsize) / (1024 ** 3)
+            infos["disque_libre"] = f"{libre_go:.1f} Go libres"
+        else:
+            # Windows : utiliser shutil
+            import shutil
+            total, used, free = shutil.disk_usage("C:\\")
+            infos["disque_libre"] = f"{free / (1024**3):.1f} Go libres"
+    except Exception:
+        infos["disque_libre"] = ""
+
+    return infos
+
+
+def generer_description() -> str:
+    """
+    Génère automatiquement une description structurée pour le point de restauration.
+
+    Format :
+      [Contexte] — Machine | Utilisateur | JJ/MM/AAAA HH:MM | Espace disque
+    Exemple :
+      Matinee de travail — DESKTOP-ABC / Jean / 01/04/2026 09:32 | C: 128.4 Go libres
+    """
+    now        = datetime.now()
+    jour_sem   = _JOURS_FR[now.weekday()]
+    contexte   = _contexte_heure(now.hour)
+    date_str   = now.strftime("%d/%m/%Y %H:%M")
+    infos      = _infos_systeme()
+
+    machine    = infos.get("machine", "PC")
+    user       = infos.get("utilisateur", "User")
+    disque     = infos.get("disque_libre", "")
+
+    # Construction de la description (max 256 caractères)
+    parties = [f"[{contexte} - {jour_sem}]", f"{machine}/{user}", date_str]
+    if disque:
+        parties.append(f"C: {disque}")
+
+    description = "  |  ".join(parties)
+    return description[:256]
 
 
 # ─────────────────────────────────────────────
@@ -416,9 +509,9 @@ def _saisir_lecteur() -> str:
 def afficher_menu() -> None:
     sep = f"{C.GREY}{'─'*54}{C.RESET}"
     print(f"""
-{C.BOLD}{C.WHITE}  Gestionnaire de Points de Restauration v1.0{C.RESET}
+{C.BOLD}{C.WHITE}  Gestionnaire de Points de Restauration v1.1{C.RESET}
 {sep}
-  {C.YEL}1{C.RESET}  Creer un point de restauration
+  {C.YEL}1{C.RESET}  Creer un point de restauration (description auto ou manuelle)
   {C.YEL}2{C.RESET}  Lister les points de restauration
   {C.YEL}3{C.RESET}  Supprimer un point de restauration
   {C.YEL}4{C.RESET}  Restaurer le systeme vers un point
@@ -444,15 +537,19 @@ def afficher_journal() -> None:
 def main() -> None:
     os.system("")           # Active les séquences ANSI sur Windows 10+
     relancer_en_admin()
-    logger.info("=== Demarrage Gestionnaire Restauration v1.0 ===")
+    logger.info("=== Demarrage Gestionnaire Restauration v1.1 ===")
 
     while True:
         afficher_menu()
         choix = input(f"{C.CYAN}  Votre choix : {C.RESET}").strip()
 
         if choix == "1":
-            desc = input("  Description (Entree = defaut) : ").strip()
-            creer_point(desc or "Point de restauration Python")
+            desc_auto = generer_description()
+            info(f"Description generee : {desc_auto}")
+            saisie = input(
+                "  Appuyez sur Entree pour l'utiliser, ou tapez votre propre description : "
+            ).strip()
+            creer_point(saisie if saisie else desc_auto)
 
         elif choix == "2":
             afficher_points()
