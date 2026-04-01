@@ -44,9 +44,14 @@ def run_winget(args: list[str], timeout: int = 60, stream: bool = False) -> tupl
         return str(e), -1
 
 def check_winget() -> bool:
-    out, rc = run_winget(["--version"])
-    if rc == 0:
-        ok(f"Winget {out} disponible."); return True
+    try:
+        r = subprocess.run(["winget", "--version"], capture_output=True, text=True,
+                          encoding="utf-8", errors="replace", timeout=10)
+        if r.returncode == 0:
+            version = r.stdout.strip() or r.stderr.strip()
+            ok(f"Winget {version} disponible."); return True
+    except (FileNotFoundError, subprocess.TimeoutExpired, Exception):
+        pass
     err("Winget non disponible. Installez 'App Installer' depuis le Microsoft Store.")
     return False
 
@@ -272,7 +277,10 @@ def print_banner():
 def main():
     os.system("cls" if os.name=="nt" else "clear")
     print_banner()
-    if not check_winget(): sys.exit(1)
+    winget_available = check_winget()
+    if not winget_available:
+        warn("Les fonctionnalités seront limitées sans Winget.")
+        input("\n  Appuyez sur Entrée pour continuer...")
     while True:
         print(f"""\n{C.BOLD}─── MENU ────────────────────────────────────{C.RESET}
   {C.CYAN}1.{C.RESET} Lister les logiciels installés

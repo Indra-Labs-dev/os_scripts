@@ -4,9 +4,15 @@ Registre + dossiers Startup + Task Scheduler, délai de démarrage, impact, scor
 Auteur: Indra-Labs-dev
 """
 
-import os, sys, json, subprocess, winreg if os.name=="nt" else None, logging
+import os, sys, json, subprocess, logging
 from datetime import datetime
 from pathlib import Path
+
+# Import winreg seulement sur Windows
+try:
+    import winreg
+except ImportError:
+    winreg = None
 
 APP_DIR  = Path(os.environ.get("APPDATA", Path.home())) / "StartupManager"
 LOG_FILE = APP_DIR / "startup.log"
