@@ -1,5 +1,5 @@
 """
-Gestionnaire de Démarrage Windows - Version 2.0
+Gestionnaire de Démarrage Windows - Version 1.0
 Registre + dossiers Startup + Task Scheduler, délai de démarrage, impact, score
 Auteur: Indra-Labs-dev
 """
@@ -245,7 +245,7 @@ def menu_export():
 def print_banner():
     print(f"""{C.CYAN}{C.BOLD}
 ╔══════════════════════════════════════════════════════════════╗
-║        🚀  Gestionnaire de Démarrage Windows v2.0            ║
+║        🚀  Gestionnaire de Démarrage Windows v1.0            ║
 ║   Registre · Dossiers · Tâches · Impact · Optimisation       ║
 ╚══════════════════════════════════════════════════════════════╝{C.RESET}""")
 

@@ -1,5 +1,5 @@
 """
-Gestionnaire de Sauvegarde Intelligente - Version 2.0
+Gestionnaire de Sauvegarde Intelligente - Version 1.0
 Backup incrémental, versioning, compression, planification Windows Task Scheduler
 Auteur: Indra-Labs-dev
 """
@@ -245,7 +245,7 @@ def remove_scheduled_task(profile_name: str):
 def print_banner():
     print(f"""{C.CYAN}{C.BOLD}
 ╔══════════════════════════════════════════════════════════════╗
-║          💾  Gestionnaire de Sauvegarde v2.0                 ║
+║          💾  Gestionnaire de Sauvegarde v1.0                 ║
 ║   Incrémental · Versioning · Compression · Planification     ║
 ╚══════════════════════════════════════════════════════════════╝{C.RESET}""")
 

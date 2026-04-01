@@ -1,5 +1,5 @@
 """
-Gestionnaire de Logiciels - Version 2.0
+Gestionnaire de Logiciels - Version 1.0
 Winget étendu : liste, install, désinstall, MàJ, export, recherche, batch install
 Auteur: Indra-Labs-dev
 """
@@ -265,7 +265,7 @@ def menu_bundles():
 def print_banner():
     print(f"""{C.CYAN}{C.BOLD}
 ╔══════════════════════════════════════════════════════════════╗
-║        📦  Gestionnaire de Logiciels v2.0                    ║
+║        📦  Gestionnaire de Logiciels v1.0                    ║
 ║    Winget · Recherche · MàJ · Bundles · Export               ║
 ╚══════════════════════════════════════════════════════════════╝{C.RESET}""")
 

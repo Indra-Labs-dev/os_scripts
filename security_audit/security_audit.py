@@ -1,5 +1,5 @@
 """
-Audit de Sécurité Windows - Version 2.0
+Audit de Sécurité Windows - Version 1.0
 Analyse complète : pare-feu, Defender, ports, comptes, UAC, BitLocker, RDP, politique MdP
 Auteur: Indra-Labs-dev
 """
@@ -214,7 +214,7 @@ class SecurityAudit:
 def print_banner():
     print(f"""{C.CYAN}{C.BOLD}
 ╔══════════════════════════════════════════════════════════════╗
-║            🛡️  Audit de Sécurité Windows v2.0               ║
+║            🛡️  Audit de Sécurité Windows v1.0               ║
 ║       Pare-feu · Defender · BitLocker · UAC · RDP           ║
 ╚══════════════════════════════════════════════════════════════╝{C.RESET}""")
 

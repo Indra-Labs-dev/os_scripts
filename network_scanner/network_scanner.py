@@ -1,5 +1,5 @@
 """
-Scanner Réseau - Version 2.0
+Scanner Réseau - Version 1.0
 Scan ARP, détection OS (TTL), ports, services, vulnérabilités basiques, export
 Auteur: Indra-Labs-dev
 """
@@ -255,7 +255,7 @@ class NetworkScanner:
 def print_banner():
     print(f"""{C.CYAN}{C.BOLD}
 ╔══════════════════════════════════════════════════════════════╗
-║            🌐  Scanner Réseau v2.0                           ║
+║            🌐  Scanner Réseau v1.0                           ║
 ║    Ping Sweep · Ports · Détection OS · Vulnérabilités        ║
 ╚══════════════════════════════════════════════════════════════╝{C.RESET}""")
 

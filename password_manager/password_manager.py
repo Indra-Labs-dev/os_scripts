@@ -1,5 +1,5 @@
 """
-Gestionnaire de Mots de Passe Local - Version 2.0
+Gestionnaire de Mots de Passe Local - Version 1.0
 Chiffrement AES-256 (Fernet) + dérivation de clé Argon2id
 Auteur: Indra-Labs-dev
 """
@@ -238,7 +238,7 @@ def print_banner():
     print(f"""{C.CYAN}{C.BOLD}
 ╔══════════════════════════════════════════════════════════════╗
 ║          🔐  Gestionnaire de Mots de Passe Local             ║
-║                    Version 2.0 — AES-256                     ║
+║                    Version 1.0 — AES-256                     ║
 ╚══════════════════════════════════════════════════════════════╝{C.RESET}""")
 
 def print_menu():

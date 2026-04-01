@@ -1,5 +1,5 @@
 """
-Analyseur de Logs Windows - Version 2.0
+Analyseur de Logs Windows - Version 1.0
 Détection avancée : brute force, escalade de privilèges, pass-the-hash, ransomware, malware
 Auteur: Indra-Labs-dev
 """
@@ -324,7 +324,7 @@ Get-WinEvent -LogName 'System' -MaxEvents 500 -ErrorAction SilentlyContinue |
 def print_banner():
     print(f"""{C.CYAN}{C.BOLD}
 ╔══════════════════════════════════════════════════════════════╗
-║          📋  Analyseur de Logs Windows v2.0                  ║
+║          📋  Analyseur de Logs Windows v1.0                  ║
 ║  Brute Force · Pass-the-Hash · Escalade · Persistance        ║
 ╚══════════════════════════════════════════════════════════════╝{C.RESET}""")
 

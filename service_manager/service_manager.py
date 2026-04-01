@@ -1,5 +1,5 @@
 """
-Gestionnaire de Services Windows - Version 2.0
+Gestionnaire de Services Windows - Version 1.0
 Lister, démarrer/arrêter, modifier, détecter services suspects, analyse dépendances
 Auteur: Indra-Labs-dev
 """
@@ -263,7 +263,7 @@ def menu_export():
 def print_banner():
     print(f"""{C.CYAN}{C.BOLD}
 ╔══════════════════════════════════════════════════════════════╗
-║        ⚙️  Gestionnaire de Services Windows v2.0             ║
+║        ⚙️  Gestionnaire de Services Windows v1.0             ║
 ║   Lister · Contrôler · Analyser · Optimiser · Planifier      ║
 ╚══════════════════════════════════════════════════════════════╝{C.RESET}""")
 

@@ -1,5 +1,5 @@
 """
-Moniteur de Processus - Version 2.0
+Moniteur de Processus - Version 1.0
 Mode live (top-like), CPU/RAM, processus suspects, kill, analyse réseau par processus
 Auteur: Indra-Labs-dev
 """
@@ -166,7 +166,7 @@ def live_mode(interval: int = 2, top_n: int = 20):
             procs = get_processes()[:top_n]
             ts    = datetime.now().strftime("%H:%M:%S")
 
-            print(f"{C.BOLD}{C.CYAN}Process Monitor v2.0{C.RESET}  {C.GREY}{ts}{C.RESET}")
+            print(f"{C.BOLD}{C.CYAN}Process Monitor v1.0{C.RESET}  {C.GREY}{ts}{C.RESET}")
             print(f"\n  CPU  [{bar(stats['cpu_pct'])}] {stats['cpu_pct']:.1f}%")
             mem_pct = stats['mem_pct']
             print(f"  RAM  [{bar(mem_pct)}] {mem_pct:.1f}%  ({fmt_mem(stats['mem_used'])} / {fmt_mem(stats['mem_total'])})")
@@ -279,7 +279,7 @@ def menu_export():
 def print_banner():
     print(f"""{C.CYAN}{C.BOLD}
 ╔══════════════════════════════════════════════════════════════╗
-║         📈  Moniteur de Processus v2.0                       ║
+║         📈  Moniteur de Processus v1.0                       ║
 ║   Live · CPU/RAM · Suspects · Réseau · Kill                  ║
 ╚══════════════════════════════════════════════════════════════╝{C.RESET}""")
 
