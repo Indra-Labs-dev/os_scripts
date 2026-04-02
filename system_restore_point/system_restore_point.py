@@ -221,34 +221,76 @@ def generer_description() -> str:
 # ─────────────────────────────────────────────
 
 def creer_point(description: str = "Point de restauration Python") -> bool:
-    """
-    Crée un point de restauration via Checkpoint-Computer (PowerShell natif).
-    Retourne True si réussi.
-    """
     description = (description.strip()[:256] or "Point de restauration Python")
-    # Echapper les guillemets simples dans la description
     desc_ps = description.replace("'", "''")
 
-    script = f"Checkpoint-Computer -Description '{desc_ps}' -RestorePointType 'MODIFY_SETTINGS'"
+    # ── Patch fréquence (force Windows à ignorer le délai 24h) ──────────
+    script_freq = (
+        "Set-ItemProperty "
+        "-Path 'HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SystemRestore' "
+        "-Name 'SystemRestorePointCreationFrequency' "
+        "-Value 0 -Type DWord -Force"
+    )
+    _ps(script_freq)
+
+    # ── Snapshot AVANT ───────────────────────────────────────────────────
+    points_avant = {p["SequenceNumber"] for p in lister_points()}
+
+    # ── Création avec -ErrorAction Stop pour forcer la remontée d'erreur ─
+    script = (
+        f"try {{"
+        f"  Checkpoint-Computer "
+        f"  -Description '{desc_ps}' "
+        f"  -RestorePointType 'MODIFY_SETTINGS' "
+        f"  -ErrorAction Stop; "
+        f'  Write-Output "CHECKPOINT_OK"'
+        f"}} catch {{"
+        f'  Write-Output "CHECKPOINT_ERR:$($_.Exception.Message)"'
+        f"}}"
+    )
 
     try:
         code, stdout, stderr = _ps(script, timeout=60)
-        if code == 0:
-            ok(f"Point cree avec succes : \"{description}\"")
-            logger.info("Creation reussie : %s", description)
+
+        # Diagnostic brut — affiché dans tous les cas
+        info(f"[DEBUG] code={code}")
+        info(f"[DEBUG] stdout={stdout[:300] if stdout else '(vide)'}")
+        info(f"[DEBUG] stderr={stderr[:300] if stderr else '(vide)'}")
+
+        # ── Vérification réelle ──────────────────────────────────────────
+        points_apres = {p["SequenceNumber"] for p in lister_points()}
+        nouveaux     = points_apres - points_avant
+
+        if nouveaux:
+            seq = list(nouveaux)[0]
+            ok(f"Point cree avec succes (n°{seq}) : \"{description}\"")
+            logger.info("Creation verifiee : n°%s — %s", seq, description)
             return True
+
+        # ── Diagnostic selon ce que PowerShell a retourné ────────────────
+        combined = (stdout + stderr).lower()
+
+        if "checkpoint_err:" in stdout.lower():
+            msg = stdout.split("CHECKPOINT_ERR:", 1)[-1].strip()
+            err(f"Erreur PowerShell : {msg}")
+            
+            if "frequency" in msg.lower() or "already" in msg.lower():
+                warn("Limite 24h active malgre le patch — redemarrez le script en admin pur.")
+            elif "access" in msg.lower() or "privilege" in msg.lower():
+                err("Privileges insuffisants malgre UAC — lancez en 'Executer en tant qu administrateur'.")
+            elif "disabled" in msg.lower() or "not enabled" in msg.lower():
+                err("La protection systeme est desactivee — utilisez l'option 5 puis reessayez.")
+        elif "checkpoint_ok" in stdout.lower():
+            err("PowerShell confirme OK mais aucun point trouve dans Get-ComputerRestorePoint.")
+            err("Cause probable : VSS (Volume Shadow Copy) ne repond pas.")
+            warn("Solution : net start vss  dans un terminal admin.")
         else:
-            # PowerShell renvoie parfois un code != 0 mais réussit quand même
-            # (fréquence minimale de création : 1 point par 24h par défaut)
-            if "already been created" in stderr.lower() or "frequence" in stderr.lower():
-                warn("Windows limite la creation a 1 point par 24h pour le meme type.")
-                warn("Conseil : changez la description ou attendez 24h.")
-            else:
-                err(f"Echec (code {code}).")
-                if stderr:
-                    err(f"Detail : {stderr}")
-            logger.warning("Creation echouee (code=%d) : %s", code, stderr)
-            return False
+            err("Reponse PowerShell inattendue — voir DEBUG ci-dessus.")
+
+        logger.warning("Creation non verifiee (code=%d) stdout=%s stderr=%s",
+                       code, stdout[:200], stderr[:200])
+        return False
+
     except RuntimeError as exc:
         err(str(exc))
         logger.error("Creation — %s", exc)
